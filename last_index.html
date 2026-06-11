@@ -23,16 +23,16 @@
    ⚙️  CONFIGURAÇÃO RÁPIDA — também há um bloco JS lá embaixo (CONFIG)
    ======================================================================= */
         :root {
-            /* ATENÇÃO: estas cores são apenas um FALLBACK.
-     O tema real vem do config.json e é aplicado em runtime.
-     Menina = --pink* | Menino = --blue* (nomes internos). */
+            /* Menina (Lis) = LILÁS | Menino (Dan) = VERDE ÁGUA.
+     Mantive os nomes --pink/--blue por baixo p/ não quebrar referências. */
             --pink1: #a472e0;
             --pink2: #c9a6f2;
             --pink-deep: #7e4bc4;
+            /* lilás       */
             --blue1: #19c2b1;
             --blue2: #74e6d8;
             --blue-deep: #0c948a;
-            --line: #ffffff;
+            /* verde água  */
             --white: #ffffff;
             --ink: #241b46;
             --glass: rgba(255, 255, 255, .80);
@@ -75,7 +75,7 @@
             z-index: -3;
             background: linear-gradient(115deg,
                     var(--pink1) 0%, var(--pink2) 47%,
-                    var(--line) 47%, var(--line) 53%,
+                    #ffffff 47%, #ffffff 53%,
                     var(--blue2) 53%, var(--blue1) 100%);
             transition: background 1.2s ease;
         }
@@ -85,7 +85,7 @@
             content: "";
             position: absolute;
             inset: 0;
-            background: linear-gradient(115deg, transparent 46%, var(--line) 50%, transparent 54%);
+            background: linear-gradient(115deg, transparent 46%, rgba(255, 255, 255, .9) 50%, transparent 54%);
             filter: blur(4px);
             opacity: .7;
         }
@@ -1514,74 +1514,28 @@
     </div>
 
     <div class="flash" id="flash"></div>
-    <audio id="bgm" loop preload="auto"></audio>
+    <audio id="bgm" src="fundo.mpeg" loop preload="auto"></audio>
 
     <script>
         /* =======================================================================
-           ⚙️  TODA configuração agora vem do arquivo  config.json  (mesma pasta).
-               Aqui só ficam o objeto interno e o carregador. NÃO edite valores aqui.
+           ⚙️⚙️⚙️  AJUSTE AQUI  ⚙️⚙️⚙️
            ======================================================================= */
-        const CONFIG = {};   // preenchido por loadConfig() a partir do config.json
-        let CFG = null;      // o JSON cru, usado para as cores do tema
+        const CONFIG = {
+            SUPABASE_URL: "https://dxrbfvrradfzskrkuaeb.supabase.co",
+            SUPABASE_KEY: "sb_publishable_BWs4VALrsq3URdH3wxHzuw_axgt--sO",
 
-        async function loadConfig() {
-            const res = await fetch("config.json?v=" + Date.now(), { cache: "no-store" });
-            if (!res.ok) throw new Error("HTTP " + res.status);
-            CFG = await res.json();
+            HORA_REVELACAO: "22:15",  // quando o cronômetro começa (HH:MM, hora local)
+            MINUTOS_CRONOMETRO: 5,        // duração da contagem regressiva até estourar a caixa
 
-            const s = CFG.supabase || {};
-            CONFIG.SUPABASE_URL = s.url;
-            CONFIG.SUPABASE_KEY = s.anonKey;
-            CONFIG.TABELA_VOTOS = s.tabelaVotos || "participantes";
-            CONFIG.TABELA_MSG = s.tabelaMensagens || "mensagens";
+            NOME_MENINO: "Dan",          // palpite "menino"
+            NOME_MENINA: "Lis",          // palpite "menina"
+            SEXO: "menino",       // resultado real -> "menino" ou "menina"
+            MESES: 5,              // "chega em X meses"
 
-            const r = CFG.revelacao || {};
-            CONFIG.HORA_REVELACAO = r.hora || "22:30";
-            CONFIG.MINUTOS_CRONOMETRO = r.minutosCronometro ?? 5;
-            CONFIG.NOME_MENINO = r.nomeMenino || "Menino";
-            CONFIG.NOME_MENINA = r.nomeMenina || "Menina";
-            CONFIG.SEXO = r.sexo || "menino";
-            CONFIG.MESES = r.meses ?? 5;
-            CONFIG.FOTO_REVELACAO = r.fotoRevelacao || "dan.jpeg";
-
-            const f = CFG.fotos || {};
-            CONFIG.TOTAL_FOTOS = f.quantidade ?? 16;
-            CONFIG.EXT = (f.extensao || "jpeg").replace(/^\./, "");
-            CONFIG.PREFIXO = f.prefixo || "c_";
-            CONFIG.AUTOPLAY_MS = f.autoplayMs || 4000;
-
-            CONFIG.FAKE_ONLINE = (CFG.online && CFG.online.fake) || 0;
-
-            CONFIG.MUSICA = (CFG.audio && CFG.audio.musica) || "fundo.mpeg";
-
-            applyTheme(CFG.tema || {});
-        }
-
-        // monta o caminho de uma foto do carrossel:  PREFIXO + n + . + EXT
-        function fotoUrl(n) { return `${CONFIG.PREFIXO}${n}.${CONFIG.EXT}`; }
-
-        // aplica as cores do config.json nas variáveis CSS
-        function applyTheme(t) {
-            const root = document.documentElement.style;
-            const menino = t.menino || {}, menina = t.menina || {};
-            if (menino.principal) root.setProperty("--blue1", menino.principal);
-            if (menino.claro) root.setProperty("--blue2", menino.claro);
-            if (menino.escuro) root.setProperty("--blue-deep", menino.escuro);
-            if (menina.principal) root.setProperty("--pink1", menina.principal);
-            if (menina.claro) root.setProperty("--pink2", menina.claro);
-            if (menina.escuro) root.setProperty("--pink-deep", menina.escuro);
-            if (t.texto) root.setProperty("--ink", t.texto);
-            if (t.linhaDiagonal) root.setProperty("--line", t.linhaDiagonal);
-        }
-
-        // paleta derivada do tema (para confete e partículas)
-        function paleta() {
-            const t = (CFG && CFG.tema) || {};
-            const me_ = t.menino || { principal: "#19c2b1", claro: "#74e6d8", escuro: "#0c948a" };
-            const mn_ = t.menina || { principal: "#a472e0", claro: "#c9a6f2", escuro: "#7e4bc4" };
-            return { menino: me_, menina: mn_ };
-        }
-
+            TOTAL_FOTOS: 16,             // c_1.jpeg ... c_16.jpeg
+            FOTO_REVELACAO: "dan.jpeg",  // foto bloqueada / revelada (última do carrossel)
+            AUTOPLAY_MS: 4000            // troca automática do carrossel
+        };
         /* =======================================================================
            Modo teste: abra com  ?teste=20  -> estoura em 20 segundos
                         abra com  ?revelado  -> mostra direto o resultado
@@ -1666,7 +1620,7 @@
         }
         async function loadVotes() {
             if (!sb) return;
-            const { data, error } = await sb.from(CONFIG.TABELA_VOTOS).select("*").order("created_at", { ascending: true });
+            const { data, error } = await sb.from("participantes").select("*").order("created_at", { ascending: true });
             if (error) { console.warn(error); return; }
             participantes = data || [];
             render();
@@ -1674,7 +1628,7 @@
         function subscribeVotes() {
             if (!sb) return;
             sb.channel("votos-rt")
-                .on("postgres_changes", { event: "INSERT", schema: "public", table: CONFIG.TABELA_VOTOS }, p => {
+                .on("postgres_changes", { event: "INSERT", schema: "public", table: "participantes" }, p => {
                     if (!participantes.some(x => x.id === p.new.id)) { participantes.push(p.new); render(); }
                 }).subscribe();
         }
@@ -1683,14 +1637,14 @@
             const ch = sb.channel("presenca-cha", { config: { presence: { key: sessionId } } });
             ch.on("presence", { event: "sync" }, () => {
                 const n = Object.keys(ch.presenceState()).length;
-                $("onlineCount").textContent = CONFIG.FAKE_ONLINE + Math.max(1, n);
+                $("onlineCount").textContent = Math.max(1, n);
             });
             ch.subscribe(async s => { if (s === "SUBSCRIBED") await ch.track({ on: true }); });
         }
         async function enviarVoto(voto) {
             const payload = { nome: me ? me.nome : "", cargo: me ? me.cargo : "", voto };
             if (sb) {
-                const { data, error } = await sb.from(CONFIG.TABELA_VOTOS).insert(payload).select().single();
+                const { data, error } = await sb.from("participantes").insert(payload).select().single();
                 if (error) { console.warn(error); return null; }
                 return data;
             }
@@ -1733,8 +1687,8 @@
             const track = $("track"), dots = $("dots");
             let html = "", dHtml = "";
             for (let i = 1; i <= CONFIG.TOTAL_FOTOS; i++) {
-                html += `<div class="slide"><img loading="eager" src="${fotoUrl(i)}" alt="Foto ${i}"
-      onerror="this.parentElement.innerHTML='<div style=\\'color:#888;font-weight:800\\'>${fotoUrl(i)}</div>'"></div>`;
+                html += `<div class="slide"><img loading="eager" src="c_${i}.jpeg" alt="Foto ${i}"
+      onerror="this.parentElement.innerHTML='<div style=\\'color:#888;font-weight:800\\'>c_${i}.jpeg</div>'"></div>`;
                 dHtml += `<i></i>`;
             }
             // slide bloqueado (revelação)
@@ -1746,7 +1700,7 @@
             go(0, true);
             startAuto();
             // pré-carrega
-            for (let i = 1; i <= CONFIG.TOTAL_FOTOS; i++) { const im = new Image(); im.src = fotoUrl(i); }
+            for (let i = 1; i <= CONFIG.TOTAL_FOTOS; i++) { const im = new Image(); im.src = `c_${i}.jpeg`; }
         }
         function go(i, instant) {
             cur = (i + slides.length) % slides.length;
@@ -1804,8 +1758,7 @@
         }
         function celebrateVote() {
             playChime();
-            const pal = paleta();
-            if (window.confetti) confetti({ particleCount: 120, spread: 80, origin: { y: .7 }, colors: [pal.menino.principal, pal.menina.principal, "#ffffff"] });
+            if (window.confetti) confetti({ particleCount: 120, spread: 80, origin: { y: .7 }, colors: ["#19c2b1", "#a472e0", "#ffffff"] });
         }
 
         /* =======================================================================
@@ -1827,8 +1780,8 @@
         function startClimaxFlip(intervalMs) {
             if (climaxFlipTimer) clearInterval(climaxFlipTimer);
             let i = 1; const img = $("flipimg");
-            img.src = fotoUrl(i);
-            climaxFlipTimer = setInterval(() => { i = i % CONFIG.TOTAL_FOTOS + 1; img.src = fotoUrl(i); }, intervalMs);
+            img.src = `c_${i}.jpeg`;
+            climaxFlipTimer = setInterval(() => { i = i % CONFIG.TOTAL_FOTOS + 1; img.src = `c_${i}.jpeg`; }, intervalMs);
         }
         function stopClimaxFlip() { if (climaxFlipTimer) { clearInterval(climaxFlipTimer); climaxFlipTimer = null; } }
 
@@ -1900,8 +1853,7 @@
         }
 
         function spawnParticles() {
-            const pal = paleta();
-            const colors = [pal.menina.principal, pal.menino.principal, "#ffffff", pal.menino.claro, pal.menina.claro];
+            const colors = ["#a472e0", "#19c2b1", "#ffffff", "#74e6d8", "#c9a6f2"];
             const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
             for (let i = 0; i < 46; i++) {
                 const p = document.createElement("div"); p.className = "particle";
@@ -1917,8 +1869,7 @@
         }
         function blueRain(ms) {
             const end = Date.now() + ms;
-            const pal = paleta();
-            const c1 = CONFIG.SEXO === "menino" ? [pal.menino.principal, pal.menino.claro, "#ffffff", pal.menino.escuro] : [pal.menina.principal, pal.menina.claro, "#ffffff", pal.menina.escuro];
+            const c1 = CONFIG.SEXO === "menino" ? ["#19c2b1", "#74e6d8", "#ffffff", "#0c948a"] : ["#a472e0", "#c9a6f2", "#ffffff", "#7e4bc4"];
             (function frame() {
                 if (!window.confetti) return;
                 confetti({ particleCount: 6, angle: 60, spread: 70, origin: { x: 0 }, colors: c1 });
@@ -2013,7 +1964,7 @@
         let chatLoaded = false;
         async function loadChat() {
             if (!sb) return;
-            const { data, error } = await sb.from(CONFIG.TABELA_MSG).select("*").order("created_at", { ascending: true }).limit(200);
+            const { data, error } = await sb.from("mensagens").select("*").order("created_at", { ascending: true }).limit(200);
             if (error) { console.warn("chat:", error); return; }
             if ((data || []).length) { $("chatBox").innerHTML = ""; }
             (data || []).forEach(addMsg);
@@ -2022,7 +1973,7 @@
         }
         function subscribeChat() {
             if (!sb) return;
-            sb.channel("chat-rt").on("postgres_changes", { event: "INSERT", schema: "public", table: CONFIG.TABELA_MSG }, p => {
+            sb.channel("chat-rt").on("postgres_changes", { event: "INSERT", schema: "public", table: "mensagens" }, p => {
                 addMsg(p.new); scrollChat();
             }).subscribe();
         }
@@ -2047,7 +1998,7 @@
             if (!me || !me.nome) { return; }
             inp.value = "";
             if (!sb) { return; }
-            const { data, error } = await sb.from(CONFIG.TABELA_MSG).insert({ nome: me.nome, cargo: me.cargo || "", texto: tx.slice(0, 200) }).select().single();
+            const { data, error } = await sb.from("mensagens").insert({ nome: me.nome, cargo: me.cargo || "", texto: tx.slice(0, 200) }).select().single();
             if (error) { console.warn("envio:", error); inp.value = tx; return; }
             addMsg(data); scrollChat();
         }
@@ -2060,23 +2011,7 @@
         /* =======================================================================
            BOOT
            ======================================================================= */
-        async function boot() {
-            try {
-                await loadConfig();
-            } catch (e) {
-                document.body.innerHTML =
-                    '<div style="font-family:sans-serif;max-width:480px;margin:60px auto;padding:24px;background:#fff;' +
-                    'border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.2);text-align:center;color:#241b46">' +
-                    '<div style="font-size:42px">⚠️</div><h2>Não consegui carregar o config.json</h2>' +
-                    '<p style="color:#777;font-weight:600">Verifique se o arquivo <b>config.json</b> está na mesma pasta do ' +
-                    'index.html e se o site está sendo aberto por um servidor (http), não por arquivo local.</p>' +
-                    '<p style="color:#aaa;font-size:13px">Detalhe técnico: ' + (e && e.message || e) + '</p></div>';
-                console.error("config.json:", e);
-                return;
-            }
-
-            $("onlineCount").textContent = CONFIG.FAKE_ONLINE + 1;
-            $("bgm").src = CONFIG.MUSICA;
+        function boot() {
             $("revealTime").textContent = CONFIG.HORA_REVELACAO;
             $("nameBoy").textContent = CONFIG.NOME_MENINO; $("nameGirl").textContent = CONFIG.NOME_MENINA;
             $("lblBoy").textContent = CONFIG.NOME_MENINO; $("lblGirl").textContent = CONFIG.NOME_MENINA;
@@ -2122,7 +2057,7 @@
             setInterval(tickClock, 250);
             tickClock();
         }
-        document.addEventListener("DOMContentLoaded", () => { boot(); });
+        document.addEventListener("DOMContentLoaded", boot);
     </script>
 </body>
 

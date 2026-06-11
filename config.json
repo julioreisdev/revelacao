@@ -1,0 +1,42 @@
+{
+  "_comentario": "Arquivo de configuração do Chá Revelação. Edite SÓ este arquivo para personalizar tudo. Deixe na mesma pasta do index.html.",
+
+  "supabase": {
+    "url": "https://dxrbfvrradfzskrkuaeb.supabase.co",
+    "anonKey": "sb_publishable_BWs4VALrsq3URdH3wxHzuw_axgt--sO",
+    "tabelaVotos": "participantes",
+    "tabelaMensagens": "mensagens"
+  },
+
+  "revelacao": {
+    "hora": "22:30",
+    "minutosCronometro": 5,
+    "sexo": "menino",
+    "nomeMenino": "Dan",
+    "nomeMenina": "Lis",
+    "meses": 5,
+    "fotoRevelacao": "dan.jpeg"
+  },
+
+  "fotos": {
+    "quantidade": 16,
+    "extensao": "jpeg",
+    "prefixo": "c_",
+    "autoplayMs": 4000
+  },
+
+  "online": {
+    "fake": 20
+  },
+
+  "audio": {
+    "musica": "fundo.mpeg"
+  },
+
+  "tema": {
+    "menino": { "principal": "#19c2b1", "claro": "#74e6d8", "escuro": "#0c948a" },
+    "menina": { "principal": "#a472e0", "claro": "#c9a6f2", "escuro": "#7e4bc4" },
+    "texto": "#241b46",
+    "linhaDiagonal": "#ffffff"
+  }
+}
